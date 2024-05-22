@@ -1,7 +1,6 @@
 import PostForm from "@/components/forms/PostForm";
 import Loader from "@/components/shared/loader";
 import { useGetPostById } from "@/lib/react-query/queriesAndMutation";
-import React from "react";
 import { useParams } from "react-router-dom";
 
 function EditPost() {
