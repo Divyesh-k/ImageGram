@@ -1,4 +1,3 @@
 {
-   "installCommand": "npm install",
-   "includeNodeModules": true
+   "installCommand": "npm install"
  }
