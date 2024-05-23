@@ -386,3 +386,17 @@ export async function searchPosts(searchTerm : string) {
   }
 }
 
+//get top users
+export async function getUsers(limit? : number) {
+    try {
+      const users = await databases.listDocuments(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId, 
+        [Query.orderDesc("$createdAt"), Query.limit(limit || 10)]
+      )
+
+      return users;
+    } catch (error) {
+      console.log(error);
+    }
+}

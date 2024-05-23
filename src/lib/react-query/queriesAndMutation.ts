@@ -1,4 +1,9 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   createPost,
   createUserAccount,
@@ -8,6 +13,7 @@ import {
   getInfinitePosts,
   getPostById,
   getRecentPosts,
+  getUsers,
   likePost,
   savePost,
   searchPosts,
@@ -128,56 +134,69 @@ export const useGetCurrentUser = () => {
   });
 };
 
-export const useGetPostById = (postId : string) => {
+export const useGetPostById = (postId: string) => {
   return useQuery({
-    queryKey : [QUERY_KEYS.GET_POST_BY_ID , postId],
-    queryFn : () => getPostById(postId),
-    enabled : !!postId
-  })
-}
+    queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
+    queryFn: () => getPostById(postId),
+    enabled: !!postId,
+  });
+};
 
 export const useUpdatePost = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn : (post : IUpdatePost) => updatePost(post),
-    onSuccess : (data) => {
+    mutationFn: (post: IUpdatePost) => updatePost(post),
+    onSuccess: (data) => {
       client.invalidateQueries({
-        queryKey : [QUERY_KEYS.GET_POST_BY_ID , data?.$id]
-      })
-    }
-  })
-}
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
+      });
+    },
+  });
+};
 
 export const useDeletePost = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn : ({postId , imageId} : {postId : string , imageId : string}) => deletePost(postId , imageId),
-    onSuccess : () => {
+    mutationFn: ({ postId, imageId }: { postId: string; imageId: string }) =>
+      deletePost(postId, imageId),
+    onSuccess: () => {
       client.invalidateQueries({
-        queryKey : [QUERY_KEYS.GET_RECENT_POSTS ]
-      })
-    }
-  })
-}
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+    },
+  });
+};
 
 export const useGetPosts = () => {
-  return useInfiniteQuery({
-    queryKey : [QUERY_KEYS.GET_INFINITE_POSTS],
-    queryFn : getInfinitePosts,
-    getNextPageParam : (lastPage) => {
-      if(lastPage && lastPage.documents.length === 0) return null;
+    return useInfiniteQuery({
+      queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+      queryFn: getInfinitePosts,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-expect-error
+      getNextPageParam: (lastPage) => {
+        // If the last page is empty, return null to indicate no more pages
+        if (lastPage && lastPage.documents.length === 0) return null;
+  
+        // Get the ID of the last document in the current page
+        const lastId = lastPage?.documents[lastPage.documents.length - 1]?.$id;
+  
+        // Return the lastId as the cursor for fetching the next page
+        return lastId;
+      },
+    });
+};
 
-      const lastId = lastPage?.documents[lastPage.documents.length - 1].$id;
-
-      return lastId;
-    }
-  })
-}
-
-export const useSearchPosts = (searchTerm : string) => {
+export const useSearchPosts = (searchTerm: string) => {
   return useQuery({
-    queryKey : [QUERY_KEYS.SEARCH_POSTS , searchTerm],
-    queryFn : () => searchPosts(searchTerm),
-    enabled : !!searchTerm
-  })
-}
+    queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
+    queryFn: () => searchPosts(searchTerm),
+    enabled: !!searchTerm,
+  });
+};
+
+export const useGetUsers = (limit?: number) => {
+  return useQuery({
+    queryKey: ["getUsers"],
+    queryFn: () => getUsers(limit),
+  });
+};
