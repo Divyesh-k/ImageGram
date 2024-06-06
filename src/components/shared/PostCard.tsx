@@ -1,8 +1,8 @@
 import { useUserContext } from "@/context/AuthContext";
 import { multiFormatDateString } from "@/lib/utils";
 import { Models } from "appwrite";
-import { Link } from "react-router-dom";
 import PostStats from "./PostStats";
+import { Link } from "react-router-dom";
 
 type PostCardProps = {
   post: Models.Document;
@@ -19,9 +19,9 @@ function PostCard({ post }: PostCardProps) {
               src={
                 post?.creator?.imageUrl ||
                 "/assets/icons/profile-placeholder.svg"
-              }
+              } 
               alt=""
-              className="rounded-full w-12 lg:h-12"
+              className="rounded-full w-12 lg:h-12"    
             />
           </Link>
           <div className="flex flex-col">

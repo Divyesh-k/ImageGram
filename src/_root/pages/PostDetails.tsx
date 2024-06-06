@@ -44,7 +44,7 @@ const PostDetails = () => {
       <div className="hidden md:flex max-w-5xl w-full">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => history.back()}
           className="shad-button_ghost"
         >
           <img
