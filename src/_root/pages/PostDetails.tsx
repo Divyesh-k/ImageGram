@@ -2,16 +2,41 @@ import PostStats from "@/components/shared/PostStats";
 import Loader from "@/components/shared/loader";
 import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetPostById } from "@/lib/react-query/queriesAndMutation";
+import {
+  useDeletePost,
+  useDeleteSavedPost,
+  useGetPostById,
+} from "@/lib/react-query/queriesAndMutation";
 import { multiFormatDateString } from "@/lib/utils";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const PostDetails = () => {
   const { id } = useParams();
   const { user } = useUserContext();
-  const { data: post, isLoading } = useGetPostById(id || '');
+  const { data: post, isLoading } = useGetPostById(id || "");
+  const { mutate: deletePost, isPending: isdeletePostLoading } =
+    useDeletePost();
+
+  const { mutate: deleteSavedPost, isPending: isdeleteSavedPostLoading } =
+    useDeleteSavedPost();
+
+  const navigate = useNavigate();
 
   const handleDeletePost = () => {
+    deletePost({ postId: post?.$id ?? "", imageId: post?.imageId ?? "" });
+    if (post != undefined) {
+      if (post?.save) {
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        for (const save of post?.save) {
+          deleteSavedPost(save.$id);
+        }
+      }
+    }
+    if (!isdeletePostLoading) {
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    }
   };
 
   return (
@@ -19,7 +44,9 @@ const PostDetails = () => {
       <div className="hidden md:flex max-w-5xl w-full">
         <Button
           variant="ghost"
-          className="shad-button_ghost">
+          onClick={() => navigate("/")}
+          className="shad-button_ghost"
+        >
           <img
             src={"/assets/icons/back.svg"}
             alt="back"
@@ -44,7 +71,8 @@ const PostDetails = () => {
             <div className="flex-between w-full">
               <Link
                 to={`/profile/${post?.creator.$id}`}
-                className="flex items-center gap-3">
+                className="flex items-center gap-3"
+              >
                 <img
                   src={
                     post?.creator.imageUrl ||
@@ -72,7 +100,8 @@ const PostDetails = () => {
               <div className="flex-center gap-4">
                 <Link
                   to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}>
+                  className={`${user.id !== post?.creator.$id && "hidden"}`}
+                >
                   <img
                     src={"/assets/icons/edit.svg"}
                     alt="edit"
@@ -81,19 +110,24 @@ const PostDetails = () => {
                   />
                 </Link>
 
-                <Button
-                  onClick={handleDeletePost}
-                  variant="ghost"
-                  className={`ost_details-delete_btn ${
-                    user.id !== post?.creator.$id && "hidden"
-                  }`}>
-                  <img
-                    src={"/assets/icons/delete.svg"}
-                    alt="delete"
-                    width={24}
-                    height={24}
-                  />
-                </Button>
+                {isdeletePostLoading || isdeleteSavedPostLoading ? (
+                  <Loader />
+                ) : (
+                  <Button
+                    onClick={handleDeletePost}
+                    variant="ghost"
+                    className={`ost_details-delete_btn ${
+                      user.id !== post?.creator.$id && "hidden"
+                    }`}
+                  >
+                    <img
+                      src={"/assets/icons/delete.svg"}
+                      alt="delete"
+                      width={24}
+                      height={24}
+                    />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -105,7 +139,8 @@ const PostDetails = () => {
                 {post?.tags.map((tag: string, index: string) => (
                   <li
                     key={`${tag}${index}`}
-                    className="text-light-3 small-regular">
+                    className="text-light-3 small-regular"
+                  >
                     #{tag}
                   </li>
                 ))}
